@@ -48,9 +48,4 @@ export class Order {
 
 		this.pizzaList = pizzaList;
 	}
-
-
-
-
-
 }
