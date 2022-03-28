@@ -2,7 +2,7 @@ export class Cook {
 	
 	readonly id: string;
 	
-	protected constructor() {
+	private constructor() {
 	}
 
 	static create() {
