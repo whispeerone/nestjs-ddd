@@ -1,9 +1,18 @@
 
+
+
 export abstract class AggregateRoot {
 	
 	private events: any[] = [];
 
-	protected raise() {
-		
-	}	
+
+	public publishEvents() {
+
+	}
+
+	protected addEvent<T>(event: T) {
+		console.log(event.constructor.name)
+	}
+
+
 }

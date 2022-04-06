@@ -1,13 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DomainEventDispatcher } from './shared/domain-event-dispatcher';
+import { EventRepository } from './shared/move/event.repository';
+import { EventEntity } from './shared/move/event.entity';
 import { UserCreated } from './user-management/domain/events/user-created.event';
+import { HandleService } from './user-management/services/handle.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+	const app = await NestFactory.create(AppModule);
 
-  DomainEventDispatcher.register<UserCreated>(UserCreated, (x) => console.log("handled"));
+	const eventDispatcher = app.get(DomainEventDispatcher);
 
-  await app.listen(3000);
+	const hService = app.get(HandleService);
+
+	eventDispatcher.register(UserCreated, hService);	
+
+	await app.listen(3000);
 }
 bootstrap();

@@ -12,6 +12,7 @@ export class ClientRepository {
 	}
 
 	findById(id: string) : Client {
+
 		const client = this.clients.find(x => x._id == id)
 
 		if (client == null) {

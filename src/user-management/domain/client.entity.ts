@@ -6,7 +6,6 @@ import { UserCreated } from "./events/user-created.event";
 
 export class Client {
 
-
 	get _id() {
 		return this.id;
 	}
@@ -15,12 +14,18 @@ export class Client {
 		return this.phoneNumber;
 	}
 
+	get _events() {
+		return [...this.events];
+	}
+
 	private id: string;
 	private name: string;
 	private phoneNumber: string;
 	private addresses: Address[];
 	private settings: any;
 	private createAt: Date;
+
+	private events: any[] = [];
 
 	private constructor() {}
 
@@ -36,18 +41,13 @@ export class Client {
 		client.phoneNumber = phoneNumber;
 		client.createAt = new Date();
 
-		const event: UserCreated = {
-			id : client.id,
-			createdAt : client.createAt,
-			name : client.name
-		}
+		const event = new UserCreated();
+		event.id = client.id,
+		event.createdAt = client.createAt,
+		event.phoneNumber = client.phoneNumber,
 
-		this.foo(event);
+		client.events.push(event)
 
 		return client;
-	}
-
-	static foo<T>(event: T) {
-		DomainEventDispatcher.raise(event, T);		
 	}
 }
