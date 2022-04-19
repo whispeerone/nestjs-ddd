@@ -13,8 +13,8 @@ export class EventRepository extends Repository<EventEntity> {
 		event.eventId = domainEvent.id;
 		event.payload = JSON.stringify(domainEvent.payload);
 
-		// const eventEntity = this.manager.save(event)
-	    const eventEntity = this.create(event);
+		const eventEntity = this.manager.save(event)
+	    co//=nst eventEntity = this.create(event);
 		await this.manager.save(eventEntity)
 		// await eventEntity.save();
 		
