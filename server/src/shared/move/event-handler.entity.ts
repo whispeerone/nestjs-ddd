@@ -1,4 +1,4 @@
-import { Entity, BaseEntity, Column, PrimaryGeneratedColumn, CreateDateColumn } from 'typeorm';
+import { Entity, BaseEntity, Column, PrimaryColumn, CreateDateColumn } from 'typeorm';
 import { JoinTable, OneToMany} from 'typeorm';
 
 import { EventEntity } from './event.entity';
@@ -6,8 +6,8 @@ import { EventHandlingStatus } from './event-status.entity';
 
 @Entity('event_handler')
 export class EventHandlerEntity extends BaseEntity {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryColumn()
+    id: string;
 
     @Column()
     name: string;

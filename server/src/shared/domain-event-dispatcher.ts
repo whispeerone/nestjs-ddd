@@ -1,96 +1,93 @@
 import { Injectable } from "@nestjs/common";
 
 import { DomainEventModel } from "./domain-event"
-import { Event } from "../user-management/domain/events/event"
+import { DomainEvent } from "../user-management/domain/events/event"
 import { IEventHandler } from "./ievent-handler"
+import { EventHandlerDescription } from "./models"
 import { EventEntity } from "./move/event.entity"
 import { EventRepository } from "./move/event.repository"
 import { UnitOfWorkCoordinator } from "./unit-of-work.coordinator"
 import { UnitOfWork } from "./unit-of-work"
 import { EventHandlerRepository } from "./move/event-handler.repository"
 import { EventHandlingStatusRepository } from "./move/event-handling-status.repository"
-import { Repository } from 'typeorm';
+import { Repository,  Connection} from 'typeorm';
 import { plainToClass } from 'class-transformer';
+import { EventStatus } from "./move/event.status"
+
+
 @Injectable()
 export class DomainEventDispatcher {
 
-	private handlers: {[key: string]: IEventHandler<Event>[] } = {};
+	private handlers: Map<string, EventHandlerDescription[]> = new Map();
+
+	private readonly eventRepository: EventRepository;
+	private readonly eventHandlerRepository: EventHandlerRepository;
+	private readonly eventHandlingStatusRepository: EventHandlingStatusRepository;
 
 	constructor(
-		private readonly eventRepository: EventRepository,
-		private readonly eventHandlerRepository: EventHandlerRepository,
-		private readonly eventHandlingStatusRepository: EventHandlingStatusRepository
-	) {}
+		private readonly connection: Connection) {
 
-	public async register<T>(eventType : new () => T, handler: IEventHandler<T>) {
+		this.eventHandlerRepository = connection.getCustomRepository(EventHandlerRepository);
+		this.eventRepository = connection.getCustomRepository(EventRepository);
+		this.eventHandlingStatusRepository = connection.getCustomRepository(EventHandlingStatusRepository);
+	}
 
-		console.log(`Registered: ${eventType.name} -> ${handler.constructor.name}`)
+	public async register<T extends object>(eventType : new () => T, handler: IEventHandler<T>, moduleName: string) {
 
-		if (this.handlers[eventType.name] == null) {
-			this.handlers[eventType.name] = []
+		const handlerName = moduleName + "_" + handler.constructor.name;
+		const handlerEntity = await this.eventHandlerRepository.getHandler(handlerName)
+
+		let handlerId = handlerEntity?.id;
+
+		if (handlerEntity == null) {
+			handlerId = await this.eventHandlerRepository.createHandler(handlerName, eventType.name);
+			console.log(`Added to database: ${eventType.name} -> ${handlerName}`)
 		}
-		// const handlerName = handler.constructor.name;
 
-		// const handlerEntity = await this.eventHandlerRepository.getHandler(handlerName)
+		if (this.handlers.get(eventType.name) == null) {
+			this.handlers.set(eventType.name, []);
+		}
 
-		// if (handlerEntity == null) {
-		// 	await this.eventHandlerRepository.createHandler(handlerName, eventType.name);
-		// }
+		const handlers = this.handlers.get(eventType.name);
+		handlers.push({handler, systemName: handlerName, handlerId} as EventHandlerDescription);
 
-		this.handlers[eventType.name].push(handler);
+		console.log(`Registered: ${eventType.name} -> ${handlerName}`)
 	}
 
 	public async retry(eventId: string) {
-
 	}
 
-	public async publish<T extends Event>(event: T) {
-		const eventName = event.constructor.name;
-		const handlers = this.handlers[eventName];
+	public async publish<T extends DomainEvent<object>>(domainEvent: T) {
+		const domainEventId = await this.eventRepository.addEvent(domainEvent);
+
+		const eventName = domainEvent._event.constructor.name;
+		const handlers = this.handlers.get(eventName);
+
+		if (handlers == null || handlers.length === 0) {
+			console.log(`No handler found for ${eventName}`);
+			return;
+		}
 
 		for (const handler of handlers) {
-			await this.prepareEvent(event, handler);
-		}	
+			this.handleEvent(domainEvent, handler);
+		}
 	}
 
-	private async prepareEvent<T>(event: T, handler : IEventHandler<T>) {
-		// const uow = this.unitOfWorkCoordinator.getUnitOfWorkInstance(uowId);
-		// console.log("uow")
-		// const repo = uow.getRepository<EventRepository>(EventRepository);
-		// console.log("repo")
+	private async handleEvent<T extends DomainEvent<object>>(domainEvent: T, handlerDescription : EventHandlerDescription ) {
+		
+		const handlingStatus = await this.eventHandlingStatusRepository.add(domainEvent.id, handlerDescription.handlerId);
 
-		// // const repo = this.eventRepository;
-		// const domainEvent = await repo.createEvent(new DomainEvent(event));
-		// console.log("save")
-		// console.log(domainEvent)
-		// try {
-		// 	const foo = uow.getRepository(EventHandlingStatusRepository);
-		// 	await foo.createStatus(domainEvent, 2)
-		// } catch (e) {
-		// 	console.log(e)
-		// }
-		// console.log("2222")
-		// event["key"] = uow.id;
-		// console.log(uow.id)
-		await handler.handle(event);
+		try{
+			await handlerDescription.handler.handle(domainEvent.event);
+			handlingStatus.status = EventStatus.Completed;
+			
+		} catch(e) {
+			handlingStatus.status = EventStatus.Failed;
+			console.log(`Error from ${handlerDescription.systemName}`)
+			console.log(e) // log exception
+		}
 
-
-		// domainEvent.status = 1;
-		// await domainEvent.save();
+		handlingStatus.modifiedAt = new Date();
+		await handlingStatus.save(); //todo
 	}
-
-	private async handleEvent<T>(event: T, handler : IEventHandler<T>) {
-		const domainEvent = new DomainEventModel(event);
-
-		await handler.handle(event);
-
-		// domainEvent.status = 1;
-		// await domainEvent.save();
-	}
-
-	// private assertDispatcherInitialized() {
-	// 	if (this.eventRepository == null) {
-	// 		throw new Error("DomainEventDispatcher is not initialized yet");
-	// 	}
-	// }
 }

@@ -1,6 +1,4 @@
-import { Event } from "./event"
-
-export class UserCreated extends Event {
+export class UserCreated {
 	id: string;
 	createdAt: Date;
 	phoneNumber: string;

@@ -2,9 +2,10 @@ import { Address } from "./address.entity"
 import { v4 as uuidv4 } from "uuid";
 import { IUniqPhoneNumberValidator } from "./interfaces/iuniq-phone-number-checker.interface";
 import { DomainEventDispatcher } from "src/shared/domain-event-dispatcher";
+import { AggregateRoot } from "src/shared/aggregate-root";
 import { UserCreated } from "./events/user-created.event";
 
-export class Client {
+export class Client extends AggregateRoot {
 
 	get _id() {
 		return this.id;
@@ -25,10 +26,6 @@ export class Client {
 	private settings: any;
 	private createAt: Date;
 
-	private events: any[] = [];
-
-	private constructor() {}
-
 	static create(phoneNumber: string, validator: IUniqPhoneNumberValidator): Client {
 
 		if (!validator.isValid(phoneNumber)) {
@@ -42,11 +39,11 @@ export class Client {
 		client.createAt = new Date();
 
 		const event = new UserCreated();
-		event.id = client.id,
-		event.createdAt = client.createAt,
-		event.phoneNumber = client.phoneNumber,
+		event.id = client.id;
+		event.createdAt = client.createAt;
+		event.phoneNumber = client.phoneNumber;
 
-		client.events.push(event)
+		client.addEvent(event)
 
 		return client;
 	}

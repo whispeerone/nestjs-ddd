@@ -1,18 +1,11 @@
-
-
+import { DomainEvent } from "src/user-management/domain/events/event"
 
 export abstract class AggregateRoot {
 	
-	private events: any[] = [];
+	public events: DomainEvent<object>[] = [];
 
-
-	public publishEvents() {
-
+	protected addEvent<T extends object>(event: T) {
+		const domainEvent = new DomainEvent<T>(event);
+		this.events.push(domainEvent)
 	}
-
-	protected addEvent<T>(event: T) {
-		console.log(event.constructor.name)
-	}
-
-
 }

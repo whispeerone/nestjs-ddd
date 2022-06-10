@@ -28,7 +28,7 @@ export class ClientService {
             
             const events = client._events;
 
-            //this.domainEventDispatcher.publish(events[0], this.unitOfWorkService.id);
+            this.domainEventDispatcher.publish(events[0]);
             // await this.unitOfWorkService.commit();
 
             return client._id;

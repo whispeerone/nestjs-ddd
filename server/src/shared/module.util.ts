@@ -8,10 +8,13 @@ import { Constants } from "./constants";
 
 export class ModuleUtil {
 
+    static classKeyword = "class";
+    static openBracesKeyword = "{";
+
     static registerEventHandlers<T>(moduleType: T, moduleRef: ModuleRef, domainEventDispatcher: DomainEventDispatcher) {
 
         const providers = Reflect.getMetadata('providers', moduleType).values();
-
+        const moduleName = this.extractModuleName(moduleType)
         for(const provider of providers) {
 
             const eventHandlerType = Reflect.getMetadata(Constants.EVENT_HANDLER, provider);
@@ -22,8 +25,16 @@ export class ModuleUtil {
                 // const foo = plainToClass(eventType, t);
                 const instance = moduleRef.get(eventHandlerType);
 
-                domainEventDispatcher.register(eventType, instance);
+                domainEventDispatcher.register(eventType, instance, moduleName);
             }
         }
+    }
+
+    private static extractModuleName<T>(moduleType: T) {
+        const stringInterpritation = (moduleType as any).toString();
+        const from = stringInterpritation.indexOf(this.classKeyword) + this.classKeyword.length + 1;
+        const to = stringInterpritation.indexOf(this.openBracesKeyword);
+
+        return stringInterpritation.substring(from, to).replaceAll(" ", "");
     }
 }

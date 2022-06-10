@@ -11,10 +11,6 @@ import { EventsHandler } from "src/shared/event-handler.decorator";
 @Injectable()
 export class HandleService implements IEventHandler<UserCreated> {
 
-    constructor(private readonly unitOfWorkCoordinator: UnitOfWorkCoordinator) {
-        console.log("ctor")
-    }
-
     async handle(data: any): Promise<void> {
 
         // await this.optionsService.addDefauiltOptions(data.id)
