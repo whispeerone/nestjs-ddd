@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@unistory/route-decorators": "^1.0.2"
+  }
+}
