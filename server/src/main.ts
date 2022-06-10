@@ -9,12 +9,6 @@ import { HandleService } from './user-management/services/handle.service';
 async function bootstrap() {
 	const app = await NestFactory.create(AppModule);
 
-	const eventDispatcher = app.get(DomainEventDispatcher);
-
-	const hService = app.get(HandleService);
-
-	eventDispatcher.register(UserCreated, hService);	
-
 	await app.listen(3000);
 }
 bootstrap();

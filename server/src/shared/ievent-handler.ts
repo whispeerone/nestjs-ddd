@@ -1,3 +1,3 @@
 export interface IEventHandler<T> {
-	handle<T> (event: T) : Promise<void>;
+	handle(event: T) : Promise<void>;
 }

@@ -12,8 +12,9 @@ export class EventHandlerRepository extends Repository<EventHandlerEntity> {
 		eventHandler.eventType = eventType;
 
 	    const eventHandlerEntity = this.create(eventHandler);
-
-		await eventHandlerEntity.save();
+		await this.manager.save(eventHandlerEntity);
+	    
+		// await eventHandlerEntity.save();
 		
 	    return eventHandlerEntity.id;
     }
@@ -24,19 +25,6 @@ export class EventHandlerRepository extends Repository<EventHandlerEntity> {
     			name : handlerName
     		}
     	})
-    }
-
-    bar () {
-    	const repo = {} as any;
-
-    	const dutyIds = [1,2,3,4];
-    	const dutyEntities = await this.foo(dutyIds: number[], (dutyIds: number[]) => repo.findByIds(dutyIds));
-
-    }
-
-
-    async foo<T>(entityIds: number[], (entityIds: number[]) => Promise<T[]>) {
-
     }
 }
 

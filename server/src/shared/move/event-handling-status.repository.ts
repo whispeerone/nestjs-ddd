@@ -14,9 +14,11 @@ export class EventHandlingStatusRepository extends Repository<EventHandlingStatu
 		eventStatus.status = 0;
 		eventStatus.createdAt = new Date();
 		eventStatus.modifiedAt = null;
-		
+		console.log(eventStatus)
 	    const eventEntity = this.create(eventStatus);
-		await eventEntity.save();
+		//await eventEntity.save();
+
+		await this.manager.save(eventEntity);
 		
 	    return eventEntity.id;
     }

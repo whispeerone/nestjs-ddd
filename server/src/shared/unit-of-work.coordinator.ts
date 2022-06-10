@@ -1,6 +1,6 @@
 import { Injectable,Scope } from "@nestjs/common";
 
-import { UnitOfWorkService } from "src/user-management/services/unit-of-work.service";
+import { UnitOfWork } from "./unit-of-work";
 @Injectable({ scope: Scope.DEFAULT})
 export class UnitOfWorkCoordinator {
 
@@ -9,20 +9,20 @@ export class UnitOfWorkCoordinator {
 
     constructor() {}
 
-    track(uow: UnitOfWorkService) {
-        this.instanceMap[uow.id] = uow;
+    track(uow: UnitOfWork) {
+        // this.instanceMap[uow.id] = uow;
 
-        setTimeout(() => {
-            //
-        }, 2000);
+        // setTimeout(() => {
+        //     //
+        // }, 2000);
     }
 
-    getUnitOfWorkInstance(id: string): UnitOfWorkService {
+    getUnitOfWorkInstance(id: string) {
 
-        if (this.instanceMap[id] == null) {
-            throw new Error("no such UnitOfWork");
-        }
+        // if (this.instanceMap[id] == null) {
+        //     throw new Error("no such UnitOfWork");
+        // }
 
-        return this.instanceMap[id] as UnitOfWorkService;
+        // return this.instanceMap[id] as UnitOfWork;
     }
 }
