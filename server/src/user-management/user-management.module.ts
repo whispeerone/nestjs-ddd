@@ -13,15 +13,13 @@ import { ClientRepository } from "./repositories/client.repository";
 import { ModulesContainer } from '@nestjs/core/injector/modules-container';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { InstanceWrapper } from '@nestjs/core/injector/instance-wrapper';
-
 import { DomainCommonModule } from 'src/shared/domain-common.module';
 import { IEventHandler } from 'src/shared/ievent-handler';
 import { ModuleUtil } from 'src/shared/module.util';
 import { UserCreated } from "src/user-management/domain/events/user-created.event";
 
 @Module({
-    imports: [DomainCommonModule],
+    imports: [DomainCommonModule, TypeOrmModule.forFeature([ClientRepository])],
     controllers: [ClientController],
     providers: [ClientService, ClientRepository, HandleService]
 })

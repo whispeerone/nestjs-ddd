@@ -1,4 +1,4 @@
-export interface IUniqPhoneNumberValidator {
+export interface IPhoneNumberUniqueValidator {
 
-	isValid(phoneNumber: string): boolean;
+	isUnique(phoneNumber: string): Promise<boolean>;
 } 

@@ -15,6 +15,7 @@ export class ModuleUtil {
 
         const providers = Reflect.getMetadata('providers', moduleType).values();
         const moduleName = this.extractModuleName(moduleType)
+        
         for(const provider of providers) {
 
             const eventHandlerType = Reflect.getMetadata(Constants.EVENT_HANDLER, provider);

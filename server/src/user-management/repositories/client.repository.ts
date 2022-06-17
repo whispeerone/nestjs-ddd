@@ -1,46 +1,26 @@
 import { Injectable } from "@nestjs/common";
+import { EntityRepository, Repository } from 'typeorm';
 
-import { Client } from "../domain/client.entity";
+import { Client } from "../domain/client.aggregate-root";
+import { ClientEntity } from "./entities/client.entity";
 
 @Injectable()
-export class ClientRepository {
+@EntityRepository(ClientEntity)
+export class ClientRepository extends Repository<ClientEntity> {
 	
-	private clients: Client[] = [];
-
-	findAll() {
-		return this.clients;
+	async add(client: Client) {
+		const clientEntity = this.mapToEntity(client);
+		await this.manager.save(clientEntity);
 	}
 
-	findById(id: string) : Client {
+	private mapToEntity(client: Client) {
+		const entity = new ClientEntity();
 
-		const client = this.clients.find(x => x._id == id)
+		entity.id = client._id;
+		entity.name = client.name;
+		entity.createdAt = client.createAt;
+		entity.phoneNumber = client.phoneNumber;
 
-		if (client == null) {
-			throw new Error("No such client"); //todo
-		}
-
-		return client;
-	}
-
-	create(client: Client) {
-		const isClientExist = this.clients.some(x => x._id == client._id);
-
-		if (isClientExist) {
-			throw new Error("Client already exists"); //todo
-		}
-
-		this.clients.push(client);
-	}
-
-	update(client: Client) {
-		const isClientExist = this.clients.some(x => x._id == client._id);
-
-		if (!isClientExist) {
-			throw new Error("Client don't exists"); //todo
-		}
-
-		const clientIndx = this.clients.findIndex(x => x._id == client._id);
-
-		this.clients[clientIndx] = client;
+		return entity;
 	}
 }

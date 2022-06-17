@@ -12,8 +12,8 @@ import { EventHandlerRepository } from "./move/event-handler.repository"
 import { EventHandlingStatusRepository } from "./move/event-handling-status.repository"
 import { Repository,  Connection} from 'typeorm';
 import { plainToClass } from 'class-transformer';
-import { EventStatus } from "./move/event.status"
-
+import { EventStatus } from "./move/event.status";
+import { Subject } from "rxjs";
 
 @Injectable()
 export class DomainEventDispatcher {
@@ -57,7 +57,14 @@ export class DomainEventDispatcher {
 	public async retry(eventId: string) {
 	}
 
-	public async publish<T extends DomainEvent<object>>(domainEvent: T) {
+	public async publishAll<T extends DomainEvent<object>>(domainEvents: T[]){
+		for(const item of domainEvents) {
+			//await this.publish(item);
+		}
+	}
+
+	public async publish<T extends DomainEvent<object>>(domainEvent: T, uow?: UnitOfWork) {
+
 		const domainEventId = await this.eventRepository.addEvent(domainEvent);
 
 		const eventName = domainEvent._event.constructor.name;
@@ -68,13 +75,12 @@ export class DomainEventDispatcher {
 			return;
 		}
 
-		for (const handler of handlers) {
+		for (const handler of handlers) { // run event handlers in "background"
 			this.handleEvent(domainEvent, handler);
 		}
 	}
 
 	private async handleEvent<T extends DomainEvent<object>>(domainEvent: T, handlerDescription : EventHandlerDescription ) {
-		
 		const handlingStatus = await this.eventHandlingStatusRepository.add(domainEvent.id, handlerDescription.handlerId);
 
 		try{

@@ -1,6 +1,7 @@
-import { Address } from "./address.entity"
 import { v4 as uuidv4 } from "uuid";
-import { IUniqPhoneNumberValidator } from "./interfaces/iuniq-phone-number-checker.interface";
+
+import { Address } from "./address.model"
+import { IPhoneNumberUniqueValidator } from "./interfaces/iuniq-phone-number-checker.interface";
 import { DomainEventDispatcher } from "src/shared/domain-event-dispatcher";
 import { AggregateRoot } from "src/shared/aggregate-root";
 import { UserCreated } from "./events/user-created.event";
@@ -15,20 +16,16 @@ export class Client extends AggregateRoot {
 		return this.phoneNumber;
 	}
 
-	get _events() {
-		return [...this.events];
-	}
-
 	private id: string;
-	private name: string;
-	private phoneNumber: string;
-	private addresses: Address[];
-	private settings: any;
-	private createAt: Date;
+	public name: string;
+	public phoneNumber: string;
+	public settings: any;
+	public createAt: Date;
 
-	static create(phoneNumber: string, validator: IUniqPhoneNumberValidator): Client {
+	static async create(phoneNumber: string, validator: IPhoneNumberUniqueValidator): Promise<Client> {
 
-		if (!validator.isValid(phoneNumber)) {
+		const isPhoneNumberUnique = await validator.isUnique(phoneNumber);
+		if (!isPhoneNumberUnique) {
 			throw new Error("Client with the same phoneNumber is already registered");
 		}
 
@@ -43,7 +40,7 @@ export class Client extends AggregateRoot {
 		event.createdAt = client.createAt;
 		event.phoneNumber = client.phoneNumber;
 
-		client.addEvent(event)
+		client.addEvent(event);
 
 		return client;
 	}

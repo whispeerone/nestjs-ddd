@@ -12,16 +12,7 @@ import { EventHandlingStatus } from './move/event-status.entity';
 
 @Module({
     imports: [
-    TypeOrmModule.forRoot({
-            type: 'postgres',
-            host: 'localhost',
-            port: 5432,
-            username: 'postgres',
-            password: 'admin',
-            database: 'ddd',
-            entities: [EventEntity, EventHandlerEntity, EventHandlingStatus],
-            synchronize: true,
-        }),
+    
     TypeOrmModule.forFeature([EventRepository, EventHandlerRepository, EventHandlingStatusRepository])],
     providers: [UnitOfWork, DomainEventDispatcher, EventHandlerRepository, EventHandlingStatusRepository, EventRepository],
     exports: [UnitOfWork, DomainEventDispatcher]
