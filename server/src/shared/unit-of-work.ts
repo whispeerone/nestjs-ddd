@@ -9,7 +9,7 @@ export class UnitOfWork {
     private _queryRunner: QueryRunner;
 
     private _watchdogTimeout: NodeJS.Timeout;
-    private readonly _defaultTimeout = 1000 * 10; // 10 sec
+    private readonly _defaultTimeout = 1000 * 100; // 10 sec
 
     constructor(private readonly connection: Connection) {}
 
@@ -21,6 +21,8 @@ export class UnitOfWork {
 
         this._watchdogTimeout = setTimeout(()=> {
             if (this._queryRunner.isTransactionActive) {
+                console.log("_watchdogTimeout")
+
                 this.rollback();
             }
 
@@ -54,7 +56,6 @@ export class UnitOfWork {
     }
 
     async rollback() {
-        
         this.removeTimer();
 
         try{

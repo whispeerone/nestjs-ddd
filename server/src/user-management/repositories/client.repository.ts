@@ -4,22 +4,27 @@ import { EntityRepository, Repository } from 'typeorm';
 import { Client } from "../domain/client.aggregate-root";
 import { ClientEntity } from "./entities/client.entity";
 
-@Injectable()
 @EntityRepository(ClientEntity)
 export class ClientRepository extends Repository<ClientEntity> {
 	
 	async add(client: Client) {
 		const clientEntity = this.mapToEntity(client);
+
+		console.log("clientEntity")
+		console.log(clientEntity)
+
 		await this.manager.save(clientEntity);
 	}
 
 	private mapToEntity(client: Client) {
-		const entity = new ClientEntity();
+		const entity = this.manager.create(ClientEntity);
 
-		entity.id = client._id;
-		entity.name = client.name;
-		entity.createdAt = client.createAt;
-		entity.phoneNumber = client.phoneNumber;
+		const state = client.toState();
+
+		entity.id = state.id;
+		entity.name = state.name;
+		entity.createdAt = state.createdAt;
+		entity.phoneNumber = state.phoneNumber;
 
 		return entity;
 	}

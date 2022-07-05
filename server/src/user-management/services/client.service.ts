@@ -7,6 +7,7 @@ import { PhoneNumberUniqueValidator } from "./domain-helpers/phone-number-unique
 
 import { ClientRepository } from "../repositories/client.repository";
 import { Client } from "../domain/client.aggregate-root";
+import { PhoneNumber } from "../domain/phone-number";
 
 @Injectable({ scope: Scope.REQUEST})
 export class ClientService {
@@ -21,9 +22,10 @@ export class ClientService {
         await this.unitOfWork.startTransaction();
         try {
             const clientRepository = this.unitOfWork.getRepository(ClientRepository);
-            const uniqPhoneValidator = new PhoneNumberUniqueValidator(clientRepository);
-            const client = await Client.create(phoneNumber, uniqPhoneValidator);
 
+            const uniqPhoneValidator = new PhoneNumberUniqueValidator(clientRepository);
+            
+            const client = await Client.create(new PhoneNumber(phoneNumber), uniqPhoneValidator);
             await clientRepository.add(client);
 
             const events = client._events;
@@ -31,7 +33,7 @@ export class ClientService {
 
             await this.unitOfWork.commit();
 
-            return client._id;
+            return client.id;
         } catch(e) {
             await this.unitOfWork.rollback();
             throw e;

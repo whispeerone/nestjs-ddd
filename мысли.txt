@@ -7,3 +7,4 @@
 
 .toState
 .fromState
+IPersistent
